@@ -1,0 +1,33 @@
+*     Model name              lt(um)         wt(um)		lay		mimflag
+*                             low    high    low    high	low	high	low	high
+*     -----------------------------------------------------------------------------------------
+*     mimcap_sin              2     100      2     100		-	-	1	3
+*     mimcap_sin_3t           2     100      2     100		4	8	1	3	
+*     mimcap_sin_udc          2     100      2     100		-	-	1	3
+*     mimcap_sin_udc_3t       2     100      2     100		4	8	1	3
+*     -----------------------------------------------------------------------------------------
+*            **lt: length dimension of top metal (CTM) 
+*            **wt: width dimension of top metal (CTM) 
+*            **lay: the number of metal layer under MIM, ex. for MIM is between M6 and M7, lay=7
+*            **MIM is between Mz (or Mu) and Mx
+**************************************************************************************************
+.LIB MIM
+*
+.subckt mimcap_sin top bottom lt=10u wt=10u mf=1 mismatchflag='mismatchflag_mim' mimflag=1 scale='scale_mim'
+.param mis='((mismatchflag-1)*(mismatchflag-2)*(mismatchflag-3)/(0-1)/(0-2)/(0-3)*(0)+(mismatchflag-0)*(mismatchflag-2)*(mismatchflag-3)/(1-0)/(1-2)/(1-3)*(0.007083)+(mismatchflag-0)*(mismatchflag-1)*(mismatchflag-3)/(2-0)/(2-1)/(2-3)*(0.006203)+(mismatchflag-0)*(mismatchflag-1)*(mismatchflag-2)/(3-0)/(3-1)/(3-2)*(0.006082))'
+.param geo_fac ='1/sqrt(mf*lt*scale*wt*scale*1e12)'
+.param factmis='mis*geo_fac*par_mim'
+.param mim_a='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(-0.029u)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(-0.049u)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(-0.037u))'
+.param mim_b='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(1.03)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(1.485)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(2.014))'
+.param mim_c='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(0.207)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(0.21)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(0.218))'
+.param tcc1='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(-5.11e-5)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(-5.365e-5)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(-1.573e-5))'
+.param tcc2='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(-0.03e-6)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(-0.052e-6)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(-0.018e-6))'
+.param vcc1='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(3.66e-5)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(4.335e-5)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(-2.9e-5))'
+.param vcc2='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(-1.84e-5)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(-4.23e-5)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(-2.97e-5))'
+.param cmimbb_corner='((mimflag-2)*(mimflag-3)/(1-2)/(1-3)*(cmimbb_mimfac)+(mimflag-1)*(mimflag-3)/(2-1)/(2-3)*(cmimbb_mimfac)+(mimflag-1)*(mimflag-2)/(3-1)/(3-2)*(cmimbb2p0_mimfac))'
+.param cmim_para ='(1+factmis)*(((wt*scale+mim_a)*(lt*scale+mim_a)*1e12*mim_b)+2*((wt*scale+mim_a)+(lt*scale+mim_a))*1e6*mim_c)*1e-15*(1+(temper-25)*tcc1+(temper-25)*(temper-25)*tcc2)'
+*
+cmim top bottom 'cmim_para*(1+v(top,bottom)*vcc1+(abs(v(top,bottom))**2)*vcc2)*cmimbb_corner*mf'
+*
+.ends mimcap_sin
+*
